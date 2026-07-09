@@ -1,0 +1,247 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    @apply bg-slate-50 text-slate-900 leading-relaxed antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Sora', sans-serif;
+  }
+
+  a {
+    @apply no-underline text-inherit;
+  }
+
+  img {
+    @apply block max-w-full;
+  }
+
+  button {
+    font-family: 'DM Sans', sans-serif;
+    @apply cursor-pointer;
+  }
+
+  input, textarea, select {
+    font-family: 'DM Sans', sans-serif;
+    @apply text-sm outline-none;
+  }
+}
+
+@layer components {
+  .container,
+  .container-app {
+    @apply max-w-[1180px] mx-auto px-6;
+  }
+
+  .btn {
+    @apply inline-flex items-center gap-2 px-5 py-2 rounded-[8px] border-none font-semibold text-sm transition-all duration-200 ease-out;
+  }
+
+  .btn-primary {
+    @apply bg-orange-500 text-white hover:bg-orange-600 hover:-translate-y-1;
+  }
+
+  .btn-dark {
+    @apply bg-slate-950 text-white hover:bg-slate-800 hover:-translate-y-1;
+  }
+
+  .btn-outline {
+    @apply bg-transparent border border-slate-200 text-slate-900 hover:border-orange-500 hover:text-orange-500;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent border-none text-slate-500 px-3 py-2 hover:text-slate-900;
+  }
+
+  .btn-whatsapp {
+    @apply bg-[#25D366] text-white rounded-lg px-4 py-2 font-semibold hover:bg-[#1DA851];
+  }
+
+  .input,
+  .input-base {
+    @apply w-full px-4 py-3 border border-slate-200 rounded-[12px] text-sm text-slate-900 bg-white transition-colors duration-150;
+  }
+
+  .input:focus,
+  .input-base:focus {
+    @apply border-orange-500 ring-4 ring-orange-200/70;
+  }
+
+  .input::placeholder,
+  .input-base::placeholder {
+    @apply text-slate-400;
+  }
+
+  textarea.input {
+    @apply resize-none;
+  }
+
+  .card {
+    @apply bg-white rounded-[12px] border border-slate-200 overflow-hidden transition-all duration-200 ease-out;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  .card:hover {
+    @apply -translate-y-1;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    border-color: rgba(249,115,22,0.3);
+  }
+
+  .badge {
+    @apply inline-block px-3 py-1 rounded-full text-[0.72rem] font-semibold;
+  }
+
+  .badge-hostel {
+    @apply bg-blue-50 text-blue-700;
+  }
+
+  .badge-pg {
+    @apply bg-orange-50 text-orange-700;
+  }
+
+  .badge-flat {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+
+  .badge-boys {
+    @apply bg-blue-50 text-blue-700;
+  }
+
+  .badge-girls {
+    @apply bg-fuchsia-50 text-fuchsia-700;
+  }
+
+  .badge-co-ed {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+
+  .pill-vacant {
+    @apply bg-emerald-100 text-emerald-700 font-bold text-[0.72rem] px-2 py-1 rounded-full;
+  }
+
+  .pill-full {
+    @apply bg-red-100 text-red-600 font-bold text-[0.72rem] px-2 py-1 rounded-full;
+  }
+
+  .modal-backdrop,
+  .modal-overlay {
+    @apply fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+    animation: fadeIn 0.15s ease;
+  }
+
+  .modal,
+  .modal-box {
+    @apply bg-white rounded-[16px] w-full flex flex-col;
+    animation: slideUp 0.2s ease;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 transition-colors duration-150;
+  }
+
+  .chip.active {
+    @apply border-orange-500 bg-orange-50 text-orange-600;
+  }
+
+  .stat-card {
+    @apply bg-white border border-slate-200 rounded-[12px] p-5 shadow-sm;
+  }
+
+  .toast {
+    @apply fixed bottom-6 right-6 z-50 rounded-2xl bg-slate-950 text-white px-4 py-3 shadow-xl;
+  }
+
+  .fade-in-up {
+    animation: fadeIn 0.25s ease-out forwards;
+  }
+
+  .vacancy-pill {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold;
+  }
+
+  .vacancy-pill.full {
+    @apply bg-red-100 text-red-600;
+  }
+
+  .vacancy-pill.available {
+    @apply bg-emerald-100 text-emerald-700;
+  }
+
+  .sticky-top-bar {
+    @apply sticky top-16;
+  }
+
+  .detail-grid {
+    @apply grid gap-6;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@layer utilities {
+  .listing-grid {
+    @apply grid gap-5;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .hide-mobile {
+    @apply hidden sm:block;
+  }
+}
+
+@media (max-width: 640px) {
+  .listing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .container,
+  .container-app {
+    @apply px-4;
+  }
+
+  .modal {
+    max-width: calc(100vw - 2rem) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .sticky-top-bar {
+    top: 60px !important;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
