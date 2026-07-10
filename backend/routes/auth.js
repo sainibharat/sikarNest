@@ -61,7 +61,7 @@ router.post('/google', async (req, res, next) => {
     if (!email) return res.status(400).json({ error: 'Could not get email from Google' })
 
     const { token, user } = await upsertUser({ email, name, photo, googleId, authProvider: 'google', role })
-    res.json({ success: true, token, user: { id: user._id, email: user.email, name: user.name, photo: user.photo, role: user.role } })
+    res.json({ success: true, token, user: { id: user._id, email: user.email, name: user.name, photo: user.photo, role: user.role, savedListings: user.savedListings || [] } })
   } catch (err) {
     next(err)
   }
@@ -85,7 +85,7 @@ router.post('/google-token', async (req, res, next) => {
     res.json({
       success: true,
       token,
-      user: { id: user._id, email: user.email, name: user.name, photo: user.photo, role: user.role },
+      user: { id: user._id, email: user.email, name: user.name, photo: user.photo, role: user.role, savedListings: user.savedListings || [] },
     })
   } catch (err) {
     next(err)
@@ -143,7 +143,7 @@ router.post('/verify-otp', async (req, res, next) => {
     res.json({
       success: true,
       token,
-      user: { id: user._id, email: user.email, name: user.name, photo: user.photo, role: user.role },
+      user: { id: user._id, email: user.email, name: user.name, photo: user.photo, role: user.role, savedListings: user.savedListings || [] },
     })
   } catch (err) {
     next(err)
@@ -162,6 +162,36 @@ router.get('/me', async (req, res) => {
     res.json({ success: true, user })
   } catch {
     res.status(401).json({ error: 'Invalid token' })
+  }
+})
+
+// ─── POST /api/auth/toggle-save ───────────────────────────────────────────
+router.post('/toggle-save', async (req, res, next) => {
+  try {
+    const header = req.headers.authorization
+    if (!header) return res.status(401).json({ error: 'No token' })
+    const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET)
+    
+    const { listingId } = req.body
+    if (!listingId) return res.status(400).json({ error: 'listingId required' })
+    
+    const user = await User.findById(decoded.id)
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    
+    const isSaved = user.savedListings.includes(listingId)
+    if (isSaved) {
+      user.savedListings = user.savedListings.filter(id => id !== listingId)
+    } else {
+      user.savedListings.push(listingId)
+    }
+    
+    await user.save()
+    res.json({ success: true, savedListings: user.savedListings })
+  } catch (err) {
+    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Invalid token' })
+    }
+    next(err)
   }
 })
 

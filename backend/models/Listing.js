@@ -36,7 +36,7 @@ const listingSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     type: { type: String, enum: ['hostel', 'flat'], required: true },
-    gender: { type: String, enum: ['boys', 'girls', 'co-ed'], required: true },
+    gender: { type: String, enum: ['boys', 'girls', 'co-ed', 'family'], required: true },
     location: { type: String, required: true, trim: true },  // short area name
     address: { type: String, required: true, trim: true },  // full address
     lat: { type: Number, required: true },

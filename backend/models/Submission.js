@@ -24,7 +24,7 @@ const submissionSchema = new mongoose.Schema(
     // ── Property info ──────────────────────────────────────────────────────
     name: { type: String, required: true, trim: true },
     type: { type: String, enum: ['hostel', 'flat'], required: true },
-    gender: { type: String, enum: ['boys', 'girls', 'co-ed'], required: true },
+    gender: { type: String, enum: ['boys', 'girls', 'co-ed', 'family'], required: true },
     bhk: { type: String, default: '' },          // for flat: '1BHK' | '2BHK' | '3BHK'
     address: { type: String, required: true },
     lat: { type: Number, required: true },

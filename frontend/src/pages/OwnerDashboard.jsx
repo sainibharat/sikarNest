@@ -4,7 +4,7 @@ import ListPropertyModal from '../components/ListPropertyModal'
 
 const STATUS_CONFIG = {
   pending:  { color: '#F59E0B', bg: '#FFFBEB', label: '⏳ Under Review', desc: 'Being reviewed by SikarNest team' },
-  approved: { color: '#10B981', bg: '#F0FDF4', label: '✅ Live',          desc: 'Visible to all students' },
+  approved: { color: '#10B981', bg: '#F0FDF4', label: '✅ Live',          desc: 'Visible to all tenants' },
   rejected: { color: '#EF4444', bg: '#FEF2F2', label: '❌ Rejected',      desc: 'Contact support for details' },
 }
 
@@ -57,29 +57,14 @@ export default function OwnerDashboard({ user, onLogin }) {
     rejected: submissions.filter((s) => s.status === 'rejected').length,
   }
 
-  // Not logged in
-  if (!user) {
-    return (
-      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-        <div style={{ textAlign: 'center', maxWidth: 380 }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🏠</div>
-          <h2 style={{ fontFamily: 'Sora,sans-serif', fontWeight: 800, fontSize: '1.4rem', color: '#0F172A', marginBottom: '0.5rem' }}>
-            Owner Dashboard
-          </h2>
-          <p style={{ fontFamily: 'DM Sans,sans-serif', color: '#64748B', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-            Sign in to manage your listings, track review status, and reach students directly.
-          </p>
-          <button
-            className="btn btn-dark"
-            style={{ justifyContent: 'center', padding: '0.65rem 1.5rem' }}
-            onClick={() => onLogin('owner')}
-          >
-            Sign in to continue →
-          </button>
-        </div>
-      </div>
-    )
-  }
+  // Redirect to home if not logged in
+  useEffect(() => {
+    if (!user) {
+      navigate('/', { replace: true })
+    }
+  }, [user, navigate])
+
+  if (!user) return null
 
   return (
     <div style={{ background: '#F8FAFC', minHeight: '80vh', paddingBottom: '3rem' }}>
@@ -160,7 +145,7 @@ export default function OwnerDashboard({ user, onLogin }) {
               No listings yet
             </h3>
             <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.83rem', color: '#64748B', marginBottom: '1.25rem' }}>
-              List your hostel or flat and reach hundreds of students searching in Sikar
+              List your hostel or flat and reach hundreds of tenants searching in Sikar
             </p>
             <button className="btn btn-primary" style={{ margin: '0 auto', justifyContent: 'center' }} onClick={() => setShowModal(true)}>
               + List Your First Property
@@ -216,7 +201,7 @@ export default function OwnerDashboard({ user, onLogin }) {
                         </span>
                         {sub.gender && (
                           <span style={{ background: '#F1F5F9', color: '#475569', fontFamily: 'DM Sans,sans-serif', fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: '999px' }}>
-                            {sub.gender === 'boys' ? '👦' : sub.gender === 'girls' ? '👧' : '👥'} {sub.gender}
+                            {sub.gender === 'boys' ? '👦' : sub.gender === 'girls' ? '👧' : sub.gender === 'family' ? '👨‍👩‍👧‍👦' : '👥'} {sub.gender}
                           </span>
                         )}
                         {sub.totalBeds > 0 && (
@@ -263,7 +248,7 @@ export default function OwnerDashboard({ user, onLogin }) {
                     <div style={{ padding: '0 1.1rem 1rem' }}>
                       <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', padding: '0.6rem 0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                         <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.76rem', color: '#14532D', margin: 0 }}>
-                          🎉 Your listing is <strong>live</strong> — students can find and contact you!
+                          🎉 Your listing is <strong>live</strong> — tenants can find and contact you!
                         </p>
                         <button
                           onClick={() => navigate(`/search?q=${encodeURIComponent(sub.name)}`)}
@@ -288,7 +273,7 @@ export default function OwnerDashboard({ user, onLogin }) {
               Weekly Vacancy Reminders
             </p>
             <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.78rem', color: '#166534', lineHeight: 1.5 }}>
-              SikarNest sends you a reminder every Monday if your vacancy hasn't been updated in 5+ days. Keeping it fresh helps students find you first!
+              SikarNest sends you a reminder every Monday if your vacancy hasn't been updated in 5+ days. Keeping it fresh helps tenants find you first!
             </p>
           </div>
         </div>
@@ -297,6 +282,7 @@ export default function OwnerDashboard({ user, onLogin }) {
       {/* List property modal */}
       {showModal && (
         <ListPropertyModal
+          user={user}
           onClose={() => { setShowModal(false); loadSubmissions() }}
         />
       )}

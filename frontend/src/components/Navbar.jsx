@@ -162,19 +162,9 @@ export default function Navbar({
                   </p>
                 </div>
 
-                {/* Owner: My Listings link */}
-                {isOwner && (
-                  <button
-                    onClick={() => { closeDrop(); navigate('/owner') }}
-                    style={{ width: '100%', padding: '0.65rem 1rem', border: 'none', background: 'none', textAlign: 'left', fontFamily: 'DM Sans,sans-serif', fontSize: '0.85rem', color: '#0F172A', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                    onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                    onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
-                  >
-                    🏠 My Listings
-                  </button>
-                )}
 
-                {/* Student: Saved listings (only if any saved) */}
+
+                {/* Tenant: Saved listings (only if any saved) */}
                 {!isOwner && savedIds.length > 0 && (
                   <button
                     onClick={() => { closeDrop(); navigate('/?tab=saved') }}

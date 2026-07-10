@@ -5,7 +5,7 @@
 require('dotenv').config()
 const mongoose = require('mongoose')
 const Submission = require('../models/Submission')
-const Listing    = require('../models/Listing')
+const Listing = require('../models/Listing')
 
 async function approveAll() {
   await mongoose.connect(process.env.MONGO_URI)
@@ -26,30 +26,30 @@ async function approveAll() {
 
     // Create verified listing from submission
     const listing = await Listing.create({
-      name:        sub.name,
-      type:        sub.type,
-      gender:      sub.gender,
-      location:    sub.address.split(',').slice(-3, -1).join(',').trim() || 'Sikar',
-      address:     sub.address,
-      lat:         sub.lat,
-      lng:         sub.lng,
-      rent:        sub.rent,
-      totalBeds:   sub.totalBeds || 0,
-      vacancy:     sub.vacancy   || 0,
-      amenities:   sub.amenities || [],
-      phone:       sub.phone,
-      whatsapp:    sub.phone,
-      ownerName:   sub.ownerName,
-      ownerEmail:  sub.ownerEmail,
-      image:       sub.image || '',
+      name: sub.name,
+      type: sub.type,
+      gender: sub.gender,
+      location: sub.address.split(',').slice(-3, -1).join(',').trim() || 'Sikar',
+      address: sub.address,
+      lat: sub.lat,
+      lng: sub.lng,
+      rent: sub.rent,
+      totalBeds: sub.totalBeds || 0,
+      vacancy: sub.vacancy || 0,
+      amenities: sub.amenities || [],
+      phone: sub.phone,
+      whatsapp: sub.phone,
+      ownerName: sub.ownerName,
+      ownerEmail: sub.ownerEmail,
+      image: sub.image || '',
       description: sub.description || '',
-      isVerified:  true,
+      isVerified: true,
     })
 
     // Mark submission as approved
     await Submission.findByIdAndUpdate(sub._id, { status: 'approved' })
 
-    console.log(`     ✅ Published! Listing ID: ${listing._id}\n`)
+    console.log(`✅ Published! Listing ID: ${listing._id}\n`)
   }
 
   console.log(`🎉 Done — ${pending.length} listing(s) published.`)

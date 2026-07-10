@@ -21,8 +21,8 @@
  *     - Used by: OwnerDashboard.jsx to show listing status to the owner
  */
 
-const express    = require('express')
-const router     = express.Router()
+const express = require('express')
+const router = express.Router()
 const Submission = require('../models/Submission')
 
 // ─── POST /api/submissions ─────────────────────────────────────────────────
@@ -42,18 +42,18 @@ router.post('/', async (req, res, next) => {
 
     const submission = await Submission.create({
       name, type, gender,
-      bhk:         bhk || '',                                           // flat size (1BHK etc.)
+      bhk: bhk || '',
       address,
-      lat:         Number(lat),
-      lng:         Number(lng),
-      rent:        Number(rent),
-      totalBeds:   Number(totalBeds) || 0,
-      vacancy:     Number(vacancy) || 0,
-      amenities:   Array.isArray(amenities) ? amenities : [],           // tags like WiFi, Mess etc.
+      lat: Number(lat),
+      lng: Number(lng),
+      rent: Number(rent),
+      totalBeds: Number(totalBeds) || 0,
+      vacancy: Number(vacancy) || 0,
+      amenities: Array.isArray(amenities) ? amenities : [],
       phone,
       ownerName,
-      ownerEmail:  ownerEmail.toLowerCase(),
-      image:       image || '',
+      ownerEmail: ownerEmail.toLowerCase(),
+      image: image || '',
       description: description || '',
       // status defaults to 'pending' (set in schema)
     })
@@ -61,7 +61,7 @@ router.post('/', async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: 'Submission received! We will review and list it within 24 hours.',
-      id:      submission._id,
+      id: submission._id,
     })
   } catch (err) {
     next(err)
@@ -80,7 +80,7 @@ router.get('/', async (req, res, next) => {
   }
 })
 
-// ─── GET /api/submissions/mine?email=xxx ──────────────────────────────────
+// ─── GET /api/submissions/mine?email=xyz ──────────────────────────────────
 // Returns all submissions for a specific owner, filtered by their email.
 // Used by OwnerDashboard to show the owner the status of their listings.
 // NOTE: Route /mine must be BEFORE /:id to avoid MongoDB treating 'mine' as an _id

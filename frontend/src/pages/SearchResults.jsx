@@ -26,10 +26,11 @@ const TYPE_OPTS = [
 ]
 
 const GENDER_OPTS = [
-  { value: 'all', label: 'All' },
-  { value: 'boys', label: '👦 Boys' },
-  { value: 'girls', label: '👧 Girls' },
-  { value: 'co-ed', label: '👥 Co-Ed' },
+  { label: 'All', value: 'all' },
+  { label: 'Boys', value: 'boys' },
+  { label: 'Girls', value: 'girls' },
+  { label: 'Co-Ed', value: 'co-ed' },
+  { label: 'Family', value: 'family' },
 ]
 
 const SORT_OPTS = [

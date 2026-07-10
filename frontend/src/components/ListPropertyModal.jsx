@@ -158,7 +158,7 @@ function Spinner() {
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────
-export default function ListPropertyModal({ onClose }) {
+export default function ListPropertyModal({ onClose, user }) {
   const [step, setStep] = useState(1)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -171,7 +171,7 @@ export default function ListPropertyModal({ onClose }) {
     gender: '',     // 'boys' | 'girls' | 'co-ed'  — hostel only
     bhk: '',        // '1BHK' | '2BHK' | '3BHK'    — flat only
     // Step 2
-    ownerName: '', phone: '', email: '',
+    ownerName: user?.name || '', phone: '', email: user?.email || '',
     // Step 3
     name: '', rent: '',
     totalBeds: '', vacantBeds: '',   // hostel
@@ -268,7 +268,7 @@ export default function ListPropertyModal({ onClose }) {
       await submitListing({
         name: form.name,
         type: form.type,
-        gender: isFlat ? 'co-ed' : form.gender,
+        gender: isFlat ? 'family' : form.gender,
         address: form.address,
         lat: pin.lat,
         lng: pin.lng,
@@ -428,7 +428,7 @@ export default function ListPropertyModal({ onClose }) {
           {step === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.82rem', color: '#64748B', textAlign: 'center' }}>
-                Students will contact you directly — no broker needed
+                Tenants will contact you directly — no broker needed
               </p>
 
               <Field label="Your Full Name" required>
@@ -436,7 +436,7 @@ export default function ListPropertyModal({ onClose }) {
                   onChange={(e) => upd('ownerName', e.target.value)} />
               </Field>
 
-              <Field label="WhatsApp / Phone" required hint="📱 Students can WhatsApp or call this number">
+              <Field label="WhatsApp / Phone" required hint="📱 Tenants can WhatsApp or call this number">
                 <div style={{ position: 'relative' }}>
                   <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontFamily: 'DM Sans', fontSize: '0.82rem', color: '#94A3B8', zIndex: 1 }}>+91</span>
                   <input className="input" placeholder="10-digit number" value={form.phone}
@@ -445,8 +445,10 @@ export default function ListPropertyModal({ onClose }) {
                 </div>
               </Field>
 
-              <Field label="Email Address" required hint="🔒 Used only to send listing confirmation">
+              <Field label="Email Address" required hint="🔒 Links this listing to your account">
                 <input className="input" type="email" placeholder="yourname@gmail.com" value={form.email}
+                  disabled={!!user?.email}
+                  style={user?.email ? { opacity: 0.7, cursor: 'not-allowed', background: '#F8FAFC' } : {}}
                   onChange={(e) => upd('email', e.target.value)} />
               </Field>
             </div>
@@ -603,7 +605,7 @@ export default function ListPropertyModal({ onClose }) {
                   style={{ resize: 'vertical' }}
                 />
                 <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.68rem', color: '#94A3B8', marginTop: '4px' }}>
-                  📍 Be as specific as possible so students can find you easily
+                  📍 Be as specific as possible so tenants can find you easily
                 </p>
               </Field>
 
@@ -697,7 +699,7 @@ export default function ListPropertyModal({ onClose }) {
               </div>
               <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.82rem', color: '#64748B', lineHeight: 1.6, marginBottom: '1.25rem' }}>
                 We'll review and publish your listing within <strong>24 hours</strong>.
-                Students will contact you directly at <strong>+91 {form.phone}</strong>.
+                Tenants will contact you directly at <strong>+91 {form.phone}</strong>.
               </p>
               <button className="btn btn-primary" style={{ margin: '0 auto', justifyContent: 'center' }} onClick={onClose}>
                 Done 🎉

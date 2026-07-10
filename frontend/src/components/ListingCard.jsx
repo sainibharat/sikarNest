@@ -16,7 +16,7 @@
 import { useNavigate } from 'react-router-dom'
 
 const TYPE_COLORS = { hostel: 'badge-hostel', pg: 'badge-pg', flat: 'badge-flat' }
-const GENDER_LABELS = { boys: '👦 Boys', girls: '👧 Girls', 'both boys & girls': '👥 Co-Ed' }
+const GENDER_LABELS = { boys: '👦 Boys', girls: '👧 Girls', 'co-ed': '👥 Co-Ed', family: '👨‍👩‍👧‍👦 Family' }
 
 function HeartIcon({ filled }) {
   return (

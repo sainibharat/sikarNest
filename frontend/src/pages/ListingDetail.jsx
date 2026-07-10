@@ -35,7 +35,7 @@ const orangePin = new L.Icon({
 })
 
 const TYPE_LABELS = { hostel: '🏢 Hostel', flat: '🏠 Flat' }
-const GENDER_LABELS = { boys: '👦 Boys Only', girls: '👧 Girls Only', 'co-ed': '👥 Co-Ed' }
+const GENDER_LABELS = { boys: '👦 Boys Only', girls: '👧 Girls Only', 'co-ed': '👥 Co-Ed', family: '👨‍👩‍👧‍👦 Family' }
 const AMENITY_ICONS = { WiFi: '📶', Mess: '🍽️', AC: '❄️', CCTV: '📷', Laundry: '👕', 'RO Water': '💧', Gym: '🏋️', Parking: '🅿️', 'Study Room': '📚' }
 
 export default function ListingDetail() {

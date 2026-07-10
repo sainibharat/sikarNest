@@ -23,6 +23,13 @@ const LOCATIONS = ['Piprali Road', 'Station Road', 'Fatehpur Road', 'Nehru Nagar
 
 export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
   const navigate = useNavigate()
+
+  // Redirect logged in owners to their dashboard immediately
+  useEffect(() => {
+    if (user?.role === 'owner') {
+      navigate('/owner', { replace: true })
+    }
+  }, [user, navigate])
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [notAvailable, setNotAvailable] = useState('')
@@ -89,7 +96,7 @@ export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
 
           <h1 style={{ fontFamily: 'Sora,sans-serif', fontWeight: 800, fontSize: 'clamp(1.6rem,4vw,2.6rem)', color: 'white', lineHeight: 1.2, marginBottom: '0.75rem' }}>
             Find Your Perfect
-            <span style={{ color: '#F97316', display: 'block' }}>PG, Hostel or Flat</span>
+            <span style={{ color: '#F97316', display: 'block' }}>Hostel or Flat</span>
           </h1>
           <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.95rem', color: '#94A3B8', marginBottom: '2rem', maxWidth: 420, margin: '0 auto 2rem' }}>
             Verified listings near coaching institutes in Sikar. Real vacancies, no broker fees.
@@ -204,7 +211,7 @@ export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
                 Popular in Sikar
               </h2>
               <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.8rem', color: '#94A3B8', marginTop: '2px' }}>
-                Hostels, PGs & Flats — updated daily
+                Hostels & Flats — updated daily
               </p>
             </div>
             {/* Scroll arrows */}
@@ -289,7 +296,7 @@ export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
               </div>
               <div style={{ textAlign: 'left' }}>
                 <p style={{ fontFamily: 'Sora,sans-serif', fontWeight: 700, fontSize: '1rem', color: 'white', marginBottom: '3px' }}>
-                  List Your Hostel / PG / Flat
+                  List Your Hostel / Flat
                 </p>
                 <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.8rem', color: '#94A3B8', lineHeight: 1.4 }}>
                   Register with your name, contact info & exact map location — free, takes 2 minutes
@@ -310,7 +317,7 @@ export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
             Sikar<span style={{ color: '#F97316' }}>Nest</span>
           </p>
           <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.75rem', color: '#475569' }}>
-            © 2026 SikarNest · Built for students of Sikar, Rajasthan · Free · No broker fees
+            © 2026 SikarNest · Built for tenants in Sikar, Rajasthan · Free · No broker fees
           </p>
         </div>
       </footer>

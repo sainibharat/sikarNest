@@ -331,7 +331,7 @@ function LiveListings({ onDelete, actionId }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
       <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.8rem', color: '#64748B' }}>
-        {listings.length} live listing{listings.length !== 1 ? 's' : ''} — visible to students
+        {listings.length} live listing{listings.length !== 1 ? 's' : ''} — visible to tenants
       </p>
       {listings.map((l) => (
         <div key={l._id} style={{ background: 'white', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '0.85rem 1.1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>

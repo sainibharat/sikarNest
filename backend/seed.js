@@ -38,7 +38,7 @@ const SEED_DATA = [
   },
   {
     name: 'Green View Flat',
-    type: 'flat',
+    type: 'flat', gender: 'family',
     location: 'Station Road',
     address: 'Near Railway Station, Station Road, Sikar 332001',
     lat: 27.6055, lng: 75.1421,
@@ -98,7 +98,7 @@ const SEED_DATA = [
   },
   {
     name: 'Nehru Nagar Flat',
-    type: 'flat',
+    type: 'flat', gender: 'family',
     location: 'Nehru Nagar',
     address: 'Sector 5, Nehru Nagar, Sikar 332001',
     lat: 27.6144, lng: 75.1502,
