@@ -95,13 +95,25 @@ export async function updateVacancy(id, vacancy) {
  * @param {Object} form — all form fields from the 6-step wizard
  */
 export async function submitListing(form) {
-  return request('/submissions', {
+  return request('/listings/submit', {
     method: 'POST',
     body:   JSON.stringify(form),
   })
 }
 
-// ─── Auth (OTP Login) ──────────────────────────────────────────────────────
+/**
+ * Update an existing listing.
+ * @param {string} id — Listing ID
+ * @param {Object} updates — Fields to update (e.g. { vacancy, rent, phone, amenities, description, ownerEmail })
+ */
+export async function updateListing(id, updates) {
+  return request(`/listings/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  })
+}
+
+// ─── AUTH ──────────────────────────────────────────────────────────────────
 
 /** Send a 6-digit OTP to the given email address */
 export async function sendOTP(email) {
@@ -116,13 +128,12 @@ export async function sendOTP(email) {
  * On success, backend returns a JWT token which is stored in localStorage.
  * @param {string} email
  * @param {string} otp    — 6-digit code
- * @param {string} role   — 'tenant' | 'owner'
  * @param {string} name   — user's display name (optional)
  */
-export async function verifyOTP(email, otp, role = 'tenant', name = '') {
+export async function verifyOTP(email, otp, name = '') {
   const data = await request('/auth/verify-otp', {
     method: 'POST',
-    body:   JSON.stringify({ email, otp, role, name }),
+    body:   JSON.stringify({ email, otp, name }),
   })
   // Persist JWT so future requests are authenticated
   if (data.token) localStorage.setItem('sikarnest_token', data.token)
@@ -133,12 +144,11 @@ export async function verifyOTP(email, otp, role = 'tenant', name = '') {
  * Verify a Google ID token (credential) from Google Identity Services.
  * Backend validates the token and returns a JWT.
  * @param {string} credential — Google ID token from the GSI button
- * @param {string} role       — 'tenant' | 'owner'
  */
-export async function googleLogin(credential, role = 'tenant') {
+export async function googleLogin(credential) {
   const data = await request('/auth/google', {
     method: 'POST',
-    body:   JSON.stringify({ credential, role }),
+    body:   JSON.stringify({ credential }),
   })
   if (data.token) localStorage.setItem('sikarnest_token', data.token)
   return data

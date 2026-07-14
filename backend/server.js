@@ -23,7 +23,6 @@ const cors       = require('cors')
 
 // ─── Route modules ─────────────────────────────────────────────────────────
 const listingsRouter    = require('./routes/listings')
-const submissionsRouter = require('./routes/submissions')
 const authRouter        = require('./routes/auth')
 const adminRouter       = require('./routes/admin')
 const errorHandler      = require('./middleware/errorHandler')
@@ -54,7 +53,6 @@ app.get('/', (req, res) => res.json({ message: '🏠 SikarNest API is running' }
 
 // ─── API Routes ─────────────────────────────────────────────────────────────
 app.use('/api/listings',    listingsRouter)     // Public: browse & search listings
-app.use('/api/submissions', submissionsRouter)  // Owner: submit & track listings
 app.use('/api/auth',        authRouter)         // Auth: Google + OTP login
 app.use('/api/admin',       adminRouter)        // Admin: approve/reject (key-protected)
 

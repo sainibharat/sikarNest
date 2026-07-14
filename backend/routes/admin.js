@@ -7,18 +7,17 @@
  * The admin panel at /admin in the frontend uses these endpoints.
  *
  * Endpoints:
- *   GET  /api/admin/submissions?status=pending|approved|rejected|all
- *     - List all submissions, filtered by status
+ *   GET  /api/admin/listings?status=pending|approved|rejected|all
+ *     - List all listings, filtered by status
  *     - Used by: AdminPanel.jsx tabs
  *
  *   POST /api/admin/approve/:id
- *     - Approves a pending submission
- *     - Creates a verified Listing from the submission data
- *     - Sets submission status → 'approved'
- *     - The listing becomes immediately visible to students
+ *     - Approves a pending listing
+ *     - Sets status → 'approved'
+ *     - The listing becomes immediately visible to tenants
  *
  *   POST /api/admin/reject/:id
- *     - Sets submission status → 'rejected'
+ *     - Sets status → 'rejected'
  *     - Owner will see "Rejected" in their dashboard
  *
  *   DELETE /api/admin/listing/:id
@@ -27,9 +26,9 @@
  */
 
 const express = require('express')
-const router  = express.Router()
-const Submission = require('../models/Submission')
-const Listing    = require('../models/Listing')
+const router = express.Router()
+const Listing = require('../models/Listing')
+const { sendListingApproved } = require('../utils/mailer')
 
 // ─── Middleware: Admin key check ────────────────────────────────────────────
 // Checks for x-admin-key header or ?key= query param against ADMIN_KEY in .env
@@ -44,71 +43,52 @@ function adminOnly(req, res, next) {
 // Apply admin check to ALL routes in this router
 router.use(adminOnly)
 
-// ─── GET /api/admin/submissions ───────────────────────────────────────────
-// List submissions filtered by status (default: pending)
-router.get('/submissions', async (req, res, next) => {
+// ─── GET /api/admin/listings ───────────────────────────────────────────
+// List listings filtered by status (default: pending)
+router.get('/listings', async (req, res, next) => {
   try {
     const { status = 'pending' } = req.query
     const filter = status === 'all' ? {} : { status }   // 'all' returns everything
-    const subs = await Submission.find(filter).sort({ createdAt: -1 }).lean()
-    res.json({ success: true, count: subs.length, data: subs })
+    const listings = await Listing.find(filter).sort({ createdAt: -1 }).lean()
+    res.json({ success: true, count: listings.length, data: listings })
   } catch (err) { next(err) }
 })
 
 // ─── POST /api/admin/approve/:id ──────────────────────────────────────────
-// Approve a submission → create a verified Listing → mark submission approved
+// Approve a listing → mark approved
 router.post('/approve/:id', async (req, res, next) => {
   try {
-    const sub = await Submission.findById(req.params.id)
-    if (!sub) return res.status(404).json({ error: 'Submission not found' })
-    if (sub.status === 'approved') return res.status(400).json({ error: 'Already approved' })
+    const listing = await Listing.findById(req.params.id)
+    if (!listing) return res.status(404).json({ error: 'Listing not found' })
+    if (listing.status === 'approved') return res.status(400).json({ error: 'Already approved' })
 
-    // Create the public Listing from submission data
-    const listing = await Listing.create({
-      name:        sub.name,
-      type:        sub.type,
-      gender:      sub.gender,
-      // Extract area from address (last 3–4 parts of comma-separated address)
-      location:    sub.address.split(',').slice(-3, -1).join(',').trim() || 'Sikar',
-      address:     sub.address,
-      lat:         sub.lat,
-      lng:         sub.lng,
-      rent:        sub.rent,
-      totalBeds:   sub.totalBeds || 0,
-      vacancy:     sub.vacancy   || 0,
-      amenities:   sub.amenities || [],
-      phone:       sub.phone,
-      whatsapp:    sub.phone,    // use same number for WhatsApp CTA
-      ownerName:   sub.ownerName,
-      ownerEmail:  sub.ownerEmail,
-      image:       sub.image || '',
-      description: sub.description || '',
-      isVerified:  true,         // ← this makes it visible to students
-    })
-
-    // Mark submission as approved so owner sees updated status
-    sub.status = 'approved'
-    await sub.save()
+    // Mark listing as approved so owner sees updated status and it becomes public
+    listing.status = 'approved'
+    await listing.save()
 
     res.json({
-      success:   true,
-      message:   'Listing published!',
+      success: true,
+      message: 'Listing published!',
       listingId: listing._id,
     })
+
+    // Email the owner — fire & forget so it doesn't block the admin response
+    const listingUrl = `${process.env.CLIENT_URL}/listing/${listing._id}`
+    sendListingApproved(listing.ownerEmail, listing.ownerName, listing.name, listingUrl).catch(() => { })
   } catch (err) { next(err) }
 })
 
 // ─── POST /api/admin/reject/:id ───────────────────────────────────────────
-// Reject a submission — owner sees "Rejected" status in their dashboard
+// Reject a listing — owner sees "Rejected" status in their dashboard
 router.post('/reject/:id', async (req, res, next) => {
   try {
-    const sub = await Submission.findByIdAndUpdate(
+    const listing = await Listing.findByIdAndUpdate(
       req.params.id,
       { status: 'rejected' },
       { new: true }
     )
-    if (!sub) return res.status(404).json({ error: 'Submission not found' })
-    res.json({ success: true, message: 'Submission rejected' })
+    if (!listing) return res.status(404).json({ error: 'Listing not found' })
+    res.json({ success: true, message: 'Listing rejected' })
   } catch (err) { next(err) }
 })
 

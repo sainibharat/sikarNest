@@ -5,28 +5,21 @@
  *
  * LOGGED OUT state:
  *   Shows a hamburger (≡) button. Clicking opens a dropdown:
- *     • "Login or signup"  → LoginModal in customer/tenant mode (normal account)
- *     • "Become a host"    → LoginModal in owner mode (host account, lands on /owner)
+ *     • "Login or signup" → opens LoginModal (single unified login for all users)
  *
- * LOGGED IN as customer/tenant (role: 'customer/tenant'):
- *   Pill: light background, [avatar] "abc"
+ * LOGGED IN state :
+ *   Teal pill: [avatar] "FirstName" ▾
  *   Dropdown:
- *     • "Signed in as" / name
- *     • ❤️ Saved (with count badge) — if any saved
- *     • 🚪 Sign Out
- *
- * LOGGED IN as HOST/OWNER (role: 'owner'):
- *   Pill: dark (#0F172A) background, [avatar] "abc"
- *   Dropdown:
- *     • "Signed in as host" / name  (dark header)
- *     • 🏠 My Listings → /owner
+ *     • "Signed in as" / name or email
+ *     • ❤️ Saved (with count badge) — only shown if user has saved listings
+ *     • 🏠 Host Dashboard → /owner  (list or manage properties)
  *     • 🚪 Sign Out
  *
  * Props:
- *   user      — current user object (null if not logged in)
+ *   user      — logged-in user object { name, email, photo } or null
  *   onLogout  — called when user clicks Sign Out
- *   savedIds  — array of saved listing IDs (shows badge count, customer/tenant only)
- *   openLogin — fn(mode, redirect?) — triggers login modal in App.jsx
+ *   savedIds  — array of saved listing IDs (shows orange badge on avatar)
+ *   openLogin — fn(redirect?) — opens the LoginModal from App.jsx
  */
 
 import { useNavigate } from 'react-router-dom'
@@ -42,7 +35,6 @@ export default function Navbar({
   const [dropOpen, setDropOpen] = useState(false)
 
   const closeDrop = () => setDropOpen(false)
-  const isOwner = user?.role === 'owner'
 
   return (
     <header style={{
@@ -82,8 +74,8 @@ export default function Navbar({
               onClick={() => setDropOpen((o) => !o)}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
-                background: isOwner ? '#172a5cff' : '#4be0c0ff',
-                border: `1.5px solid ${isOwner ? '#172a5cff' : '#2cd0bbff'}`,
+                background: '#4be0c0ff',
+                border: `1.5px solid #2cd0bbff`,
                 borderRadius: '999px', padding: '5px 12px 5px 5px',
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
@@ -91,9 +83,7 @@ export default function Navbar({
               {/* Avatar circle */}
               <div style={{
                 width: 28, height: 28, borderRadius: '50%',
-                background: isOwner
-                  ? 'linear-gradient(135deg,#172a5cff,#213978ff)'
-                  : 'linear-gradient(135deg,#38BDF8,#0EA5E9)',
+                background: 'linear-gradient(135deg,#38BDF8,#0EA5E9)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: 'Sora,sans-serif', fontWeight: 700, fontSize: '0.75rem', color: 'white',
                 position: 'relative',
@@ -104,8 +94,8 @@ export default function Navbar({
                   ? <img src={user.photo} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
                   : (user.name || user.email || 'U')[0].toUpperCase()
                 }
-                {/* Saved count badge — students only */}
-                {!isOwner && savedIds.length > 0 && (
+                {/* Saved count badge */}
+                {savedIds.length > 0 && (
                   <span style={{
                     position: 'absolute', top: -4, right: -4,
                     width: 14, height: 14, borderRadius: '50%',
@@ -122,12 +112,12 @@ export default function Navbar({
               {/* First name */}
               <span style={{
                 fontFamily: 'DM Sans,sans-serif', fontWeight: 600, fontSize: '0.82rem',
-                color: isOwner ? 'white' : '#0F172A',
+                color: '#0F172A',
               }}>
                 {(user.name || user.email || 'Me').split(' ')[0]}
               </span>
 
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={isOwner ? 'white' : '#64748B'} strokeWidth="2.5">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.5">
                 <path d={dropOpen ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'} />
               </svg>
             </button>
@@ -145,27 +135,25 @@ export default function Navbar({
                 {/* User info header — dark for owner, white for customer/tenant */}
                 <div style={{
                   padding: '0.65rem 1rem', borderBottom: '1px solid #E2E8F0',
-                  background: isOwner ? '#0F172A' : 'white',
+                  background: 'white',
                 }}>
                   <p style={{
                     fontFamily: 'DM Sans,sans-serif', fontSize: '0.72rem',
-                    color: isOwner ? '#94A3B8' : '#64748B',
+                    color: '#64748B',
                   }}>
-                    {isOwner ? 'Signed in as host' : 'Signed in as'}
+                    Signed in as
                   </p>
                   <p style={{
                     fontFamily: 'Sora,sans-serif', fontWeight: 700, fontSize: '0.82rem',
-                    color: isOwner ? 'white' : '#0F172A',
+                    color: '#0F172A',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 155,
                   }}>
                     {user.name || user.email}
                   </p>
                 </div>
 
-
-
-                {/* Tenant: Saved listings (only if any saved) */}
-                {!isOwner && savedIds.length > 0 && (
+                {/* Saved listings */}
+                {savedIds.length > 0 && (
                   <button
                     onClick={() => { closeDrop(); navigate('/?tab=saved') }}
                     style={{ width: '100%', padding: '0.65rem 1rem', border: 'none', background: 'none', textAlign: 'left', fontFamily: 'DM Sans,sans-serif', fontSize: '0.85rem', color: '#0F172A', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
@@ -178,6 +166,16 @@ export default function Navbar({
                     </span>
                   </button>
                 )}
+
+                {/* Host Dashboard Link */}
+                <button
+                  onClick={() => { closeDrop(); navigate('/owner') }}
+                  style={{ width: '100%', padding: '0.65rem 1rem', border: 'none', background: 'none', textAlign: 'left', fontFamily: 'DM Sans,sans-serif', fontSize: '0.85rem', color: '#0F172A', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                  onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
+                >
+                  <span>🏠 Host Dashboard</span>
+                </button>
 
                 {/* Sign Out */}
                 <button
@@ -226,23 +224,14 @@ export default function Navbar({
                   animation: 'slideUp 0.15s ease',
                 }}
               >
-                {/* Login or signup → customer/tenant */}
+                {/* Login or signup */}
                 <button
-                  onClick={() => { closeDrop(); openLogin('customer/tenant') }}
-                  style={{ width: '100%', padding: '0.8rem 1rem', border: 'none', background: 'none', textAlign: 'left', fontFamily: 'DM Sans,sans-serif', fontSize: '0.85rem', color: '#0F172A', fontWeight: 500, cursor: 'pointer', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                  onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
-                  onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
-                >
-                  Login or signup
-                </button>
-                {/* Become a host → owner modal, redirect to /owner after login */}
-                <button
-                  onClick={() => { closeDrop(); openLogin('owner', '/owner') }}
+                  onClick={() => { closeDrop(); openLogin() }}
                   style={{ width: '100%', padding: '0.8rem 1rem', border: 'none', background: 'none', textAlign: 'left', fontFamily: 'DM Sans,sans-serif', fontSize: '0.85rem', color: '#0F172A', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                   onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
                   onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
                 >
-                  Become a host
+                  Login or signup
                 </button>
               </div>
             )}

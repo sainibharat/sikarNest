@@ -25,14 +25,21 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate }                      from 'react-router-dom'
 
-const ADMIN_KEY = 'sikarnest-admin-2025'
 const BASE = '/api/admin'
 
 function adminFetch(path, opts = {}) {
+  const key = sessionStorage.getItem('adminKey') || ''
   return fetch(`${BASE}${path}`, {
     ...opts,
-    headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY, ...opts.headers },
-  }).then((r) => r.json())
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': key, ...opts.headers },
+  }).then(async (r) => {
+    if (r.status === 403) {
+      sessionStorage.removeItem('adminKey')
+      window.dispatchEvent(new Event('admin-logout'))
+      throw new Error('Forbidden: Invalid Admin Key')
+    }
+    return r.json()
+  })
 }
 
 const TYPE_COLORS = { hostel: '#3B82F6', flat: '#8B5CF6', pg: '#F97316' }
@@ -40,6 +47,7 @@ const STATUS_COLORS = { pending: '#F59E0B', approved: '#10B981', rejected: '#EF4
 
 export default function AdminPanel() {
   const navigate = useNavigate()
+  const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('adminKey'))
   const [tab, setTab]           = useState('pending') // pending | approved | rejected
   const [submissions, setSubmissions] = useState([])
   const [listings, setListings]   = useState([])
@@ -56,8 +64,8 @@ export default function AdminPanel() {
     setLoading(true)
     try {
       const [subRes, listRes] = await Promise.all([
-        adminFetch(`/submissions?status=${tab}`),
-        tab === 'approved' ? adminFetch('/submissions?status=approved') : Promise.resolve({ data: [] }),
+        adminFetch(`/listings?status=${tab}`),
+        tab === 'approved' ? adminFetch('/listings?status=approved') : Promise.resolve({ data: [] }),
       ])
       setSubmissions(subRes.data || [])
       // Also load live listings for the listings tab
@@ -69,7 +77,22 @@ export default function AdminPanel() {
     setLoading(false)
   }, [tab])
 
-  useEffect(() => { loadData() }, [loadData])
+  useEffect(() => {
+    if (isAuthenticated) loadData()
+  }, [loadData, isAuthenticated])
+
+  useEffect(() => {
+    const handleLogout = () => setIsAuthenticated(false)
+    window.addEventListener('admin-logout', handleLogout)
+    return () => window.removeEventListener('admin-logout', handleLogout)
+  }, [])
+
+  if (!isAuthenticated) {
+    return <AdminLogin onLogin={(key) => {
+      sessionStorage.setItem('adminKey', key)
+      setIsAuthenticated(true)
+    }} />
+  }
 
   const handleApprove = async (id) => {
     setActionId(id)
@@ -352,6 +375,81 @@ function LiveListings({ onDelete, actionId }) {
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+// ─── Admin Login Component ────────────────────────────────────────────────
+function AdminLogin({ onLogin }) {
+  const navigate = useNavigate()
+  const [key, setKey] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    if (!key.trim()) return setError('Enter the admin key')
+    
+    setLoading(true)
+    setError('')
+    try {
+      // Test the key against the backend
+      const res = await fetch('/api/admin/listings?status=pending', {
+        headers: { 'x-admin-key': key }
+      })
+      if (res.status === 403) {
+        setError('Invalid admin key')
+      } else if (res.ok) {
+        onLogin(key)
+      } else {
+        setError('Server error. Try again.')
+      }
+    } catch {
+      setError('Network error. Check connection.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+      <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '2.5rem', width: '100%', maxWidth: 420, boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🛡️</div>
+          <h1 style={{ fontFamily: 'Sora,sans-serif', fontWeight: 800, fontSize: '1.4rem', color: '#0F172A' }}>Admin Access</h1>
+          <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.85rem', color: '#64748B', marginTop: '0.2rem' }}>Enter the secret key to continue</p>
+        </div>
+
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={{ fontFamily: 'DM Sans,sans-serif', fontWeight: 600, fontSize: '0.8rem', color: '#475569', display: 'block', marginBottom: '0.4rem' }}>
+              Secret Key
+            </label>
+            <input 
+              type="password" 
+              className="input" 
+              placeholder="••••••••"
+              value={key}
+              onChange={(e) => { setKey(e.target.value); setError('') }}
+              autoFocus
+            />
+          </div>
+
+          {error && (
+            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '0.6rem 0.8rem' }}>
+              <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.78rem', color: '#DC2626', margin: 0 }}>⚠️ {error}</p>
+            </div>
+          )}
+
+          <button type="submit" className="btn btn-dark" disabled={loading} style={{ justifyContent: 'center', marginTop: '0.5rem' }}>
+            {loading ? 'Verifying…' : 'Access Dashboard →'}
+          </button>
+        </form>
+
+        <button onClick={() => navigate('/')} type="button" style={{ background: 'none', border: 'none', fontFamily: 'DM Sans,sans-serif', fontSize: '0.75rem', color: '#94A3B8', marginTop: '1.5rem', width: '100%', cursor: 'pointer' }}>
+          ← Back to Website
+        </button>
+      </div>
     </div>
   )
 }

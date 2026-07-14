@@ -3,7 +3,7 @@
  *
  * This is the top-level component that:
  *   1. Manages global user session (login/logout via localStorage)
- *   2. Manages saved listing IDs (heart-saved by student)
+ *   2. Manages saved listing IDs (heart-saved by user)
  *   3. Defines all client-side routes
  *
  * Routes:
@@ -54,8 +54,8 @@ function AppContent() {
   const [user, setUser] = useState(null)
   const [savedIds, setSavedIds] = useState([])
 
-  // Controls LoginModal visibility, initial mode, and post-login redirect
-  const [loginConfig, setLoginConfig] = useState({ isOpen: false, mode: 'customer/tenant', redirect: null })
+  // Controls LoginModal visibility and post-login redirect
+  const [loginConfig, setLoginConfig] = useState({ isOpen: false, redirect: null })
 
   // ── Restore session from localStorage on first load ──────────────────────
   useEffect(() => {
@@ -64,7 +64,7 @@ function AppContent() {
       const s = localStorage.getItem('sikarnest_saved')
       if (u) setUser(JSON.parse(u))
       if (s) setSavedIds(JSON.parse(s))
-      
+
       // Sync fresh data from DB if token exists (cross-device sync)
       const token = localStorage.getItem('sikarnest_token')
       if (token) {
@@ -75,7 +75,7 @@ function AppContent() {
               const freshUser = { id: data.user._id, email: data.user.email, name: data.user.name, photo: data.user.photo, role: data.user.role, savedListings: data.user.savedListings || [] }
               setUser(freshUser)
               localStorage.setItem('sikarnest_user', JSON.stringify(freshUser))
-              
+
               setSavedIds(prev => {
                 const merged = [...new Set([...(freshUser.savedListings || []), ...prev])]
                 localStorage.setItem('sikarnest_saved', JSON.stringify(merged))
@@ -83,7 +83,7 @@ function AppContent() {
               })
             }
           })
-          .catch(() => {})
+          .catch(() => { })
       }
     } catch { /* ignore corrupted data */ }
   }, [])
@@ -92,7 +92,7 @@ function AppContent() {
   const handleLogin = (u) => {
     const dbSaves = u.savedListings || []
     const mergedSaves = [...new Set([...dbSaves, ...savedIds])]
-    
+
     // Sync any local-only saves to the database
     const localOnly = savedIds.filter(id => !dbSaves.includes(id))
     localOnly.forEach(id => {
@@ -103,7 +103,7 @@ function AppContent() {
           Authorization: `Bearer ${localStorage.getItem('sikarnest_token')}`
         },
         body: JSON.stringify({ listingId: id })
-      }).catch(() => {}) // ignore errors on background sync
+      }).catch(() => { }) // ignore errors on background sync
     })
 
     setUser(u)
@@ -118,9 +118,9 @@ function AppContent() {
     }
   }
 
-  // Helper to open login modal with a specific mode and optional redirect
-  const openLogin = (mode = 'customer/tenant', redirect = null) => {
-    setLoginConfig({ isOpen: true, mode, redirect })
+  // Helper to open login modal with an optional redirect
+  const openLogin = (redirect = null) => {
+    setLoginConfig({ isOpen: true, redirect })
   }
 
   // ── Logout — clears user + saved list ────────────────────────────────────
@@ -181,7 +181,6 @@ function AppContent() {
       {/* ── Login Modal — rendered here so it overlays everything ────────── */}
       {loginConfig.isOpen && (
         <LoginModal
-          initialMode={loginConfig.mode}
           onClose={() => setLoginConfig(prev => ({ ...prev, isOpen: false }))}
           onSuccess={handleLogin}
         />

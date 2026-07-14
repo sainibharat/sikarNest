@@ -1,7 +1,7 @@
 /**
  * pages/Home.jsx — Homepage
  *
- * The main landing page for customer/tenant.
+ * The main landing page.
  * Contains:
  *   - Hero section with animated search bar (searches by area/name)
  *   - "List Your Property" CTA button → opens ListPropertyModal
@@ -24,14 +24,8 @@ const LOCATIONS = ['Piprali Road', 'Station Road', 'Fatehpur Road', 'Nehru Nagar
 export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
   const navigate = useNavigate()
 
-  // Redirect logged in owners to their dashboard immediately
-  useEffect(() => {
-    if (user?.role === 'owner') {
-      navigate('/owner', { replace: true })
-    }
-  }, [user, navigate])
   const [query, setQuery] = useState('')
-  const [suggestions, setSuggestions] = useState([])
+  const [suggestions, setSuggestions] = useState({ areas: [], properties: [] })
   const [notAvailable, setNotAvailable] = useState('')
   const carouselRef = useRef(null)
   const [listings, setListings] = useState([])
@@ -48,30 +42,45 @@ export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
   const handleInputChange = (v) => {
     setQuery(v)
     setNotAvailable('')
-    if (v.length > 0) {
-      setSuggestions(LOCATIONS.filter((l) => l.toLowerCase().includes(v.toLowerCase())))
+    if (v.trim().length > 0) {
+      const lower = v.toLowerCase()
+      // Area suggestions from hardcoded list
+      const areas = LOCATIONS.filter((l) => l.toLowerCase().includes(lower))
+      // Real listing name/address suggestions from DB data (already fetched)
+      const properties = listings
+        .filter((l) =>
+          l.name?.toLowerCase().includes(lower) ||
+          l.address?.toLowerCase().includes(lower)
+        )
+        .slice(0, 4) // cap at 4 property results
+      setSuggestions({ areas, properties })
     } else {
-      setSuggestions([])
+      setSuggestions({ areas: [], properties: [] })
     }
   }
 
   const handleSearch = (searchQuery) => {
     const q = (searchQuery || query).trim()
-    if (!q) return
-    setSuggestions([])
-    // Always navigate — SearchResults will show 'not available' if no results
-    navigate(`/search?q=${encodeURIComponent(q)}`)
+    setSuggestions({ areas: [], properties: [] })
+    // Empty query → browse all listings; otherwise search by term
+    if (!q) {
+      navigate('/search')
+    } else {
+      navigate(`/search?q=${encodeURIComponent(q)}`)
+    }
   }
+
+  const hasSuggestions = suggestions.areas.length > 0 || suggestions.properties.length > 0
 
   const scroll = (dir) => {
     carouselRef.current?.scrollBy({ left: dir * 240, behavior: 'smooth' })
   }
 
   const handleListProperty = () => {
-    if (user && user.role === 'owner') {
+    if (user) {
       navigate('/owner?action=list')
     } else {
-      openLogin('owner', '/owner')
+      openLogin('/owner?action=list')
     }
   }
 
@@ -122,7 +131,7 @@ export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
                 value={query}
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Search by area — e.g. Piprali Road"
+                placeholder="Search by area or property name - e.g. Piprali Road"
                 style={{
                   flex: 1, padding: '0.9rem 0.5rem', border: 'none', outline: 'none',
                   fontFamily: 'DM Sans,sans-serif', fontSize: '0.95rem', color: '#0F172A',
@@ -138,31 +147,89 @@ export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
               </button>
             </div>
 
-            {/* Location suggestions */}
-            {suggestions.length > 0 && (
+            {/* Smarter Autocomplete Dropdown */}
+            {hasSuggestions && (
               <div style={{
                 position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '6px',
-                background: 'white', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                background: 'white', borderRadius: '14px',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.18)',
                 overflow: 'hidden', zIndex: 20,
+                border: '1px solid #F1F5F9',
               }}>
-                {suggestions.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => { setQuery(s); handleSearch(s) }}
-                    style={{
-                      width: '100%', padding: '0.7rem 1rem', border: 'none', background: 'none',
-                      textAlign: 'left', fontFamily: 'DM Sans,sans-serif', fontSize: '0.875rem', color: '#0F172A',
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.6rem', borderBottom: '1px solid #F8FAFC',
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.background = '#FFF7ED')}
-                    onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5">
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                    </svg>
-                    {s}
-                  </button>
-                ))}
+                {/* Area suggestions */}
+                {suggestions.areas.length > 0 && (
+                  <div>
+                    <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.65rem', fontWeight: 700, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0.55rem 1rem 0.2rem' }}>
+                      📍 Areas
+                    </p>
+                    {suggestions.areas.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => { setQuery(s); handleSearch(s) }}
+                        style={{
+                          width: '100%', padding: '0.6rem 1rem', border: 'none', background: 'none',
+                          textAlign: 'left', fontFamily: 'DM Sans,sans-serif', fontSize: '0.875rem', color: '#0F172A',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.6rem',
+                        }}
+                        onMouseOver={(e) => (e.currentTarget.style.background = '#FFF7ED')}
+                        onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5">
+                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                        </svg>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Divider if both sections visible */}
+                {suggestions.areas.length > 0 && suggestions.properties.length > 0 && (
+                  <div style={{ height: 1, background: '#F1F5F9', margin: '0.25rem 0' }} />
+                )}
+
+                {/* Real listing name suggestions */}
+                {suggestions.properties.length > 0 && (
+                  <div>
+                    <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.65rem', fontWeight: 700, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0.55rem 1rem 0.2rem' }}>
+                      🏠 Properties
+                    </p>
+                    {suggestions.properties.map((l) => (
+                      <button
+                        key={l._id}
+                        onClick={() => { setQuery(l.name); handleSearch(l.name) }}
+                        style={{
+                          width: '100%', padding: '0.6rem 1rem', border: 'none', background: 'none',
+                          textAlign: 'left', fontFamily: 'DM Sans,sans-serif', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: '0.75rem',
+                        }}
+                        onMouseOver={(e) => (e.currentTarget.style.background = '#FFF7ED')}
+                        onMouseOut={(e) => (e.currentTarget.style.background = 'none')}
+                      >
+                        {/* Mini thumbnail */}
+                        <div style={{
+                          width: 34, height: 34, borderRadius: '8px', flexShrink: 0,
+                          background: l.image ? `url(${l.image}) center/cover` : '#F1F5F9',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '0.9rem', overflow: 'hidden',
+                        }}>
+                          {!l.image && (l.type === 'hostel' ? '🏢' : '🏠')}
+                        </div>
+                        <div style={{ overflow: 'hidden' }}>
+                          <p style={{ fontFamily: 'DM Sans,sans-serif', fontWeight: 600, fontSize: '0.84rem', color: '#0F172A', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {l.name}
+                          </p>
+                          <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.72rem', color: '#94A3B8', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {l.address}
+                          </p>
+                        </div>
+                        <span style={{ marginLeft: 'auto', flexShrink: 0, fontFamily: 'Sora,sans-serif', fontWeight: 700, fontSize: '0.78rem', color: '#F97316' }}>
+                          ₹{l.rent?.toLocaleString()}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -214,8 +281,24 @@ export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
                 Hostels & Flats — updated daily
               </p>
             </div>
-            {/* Scroll arrows */}
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              {/* View All button */}
+              <button
+                onClick={() => navigate('/search')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  padding: '0.35rem 0.85rem', borderRadius: '999px',
+                  border: '1.5px solid #F97316', background: '#FFF7ED',
+                  color: '#F97316', fontFamily: 'DM Sans,sans-serif',
+                  fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = '#F97316'; e.currentTarget.style.color = 'white' }}
+                onMouseOut={(e) => { e.currentTarget.style.background = '#FFF7ED'; e.currentTarget.style.color = '#F97316' }}
+              >
+                View All →
+              </button>
+              {/* Scroll arrows */}
               {[-1, 1].map((dir) => (
                 <button
                   key={dir}
@@ -243,7 +326,7 @@ export default function Home({ user, savedIds = [], onToggleSave, openLogin }) {
               ? Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} style={{ width: 220, height: 230, flexShrink: 0, borderRadius: 12, background: '#F1F5F9', animation: 'pulse 1.5s ease infinite' }} />
               ))
-              : listings.map((l) => (
+              : listings.slice(0, 8).map((l) => (
                 <ListingCard key={l._id} listing={{ ...l, id: l._id }} compact
                   user={user}
                   isSaved={savedIds.includes(l._id)}

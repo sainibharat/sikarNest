@@ -37,7 +37,8 @@ const listingSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     type: { type: String, enum: ['hostel', 'flat'], required: true },
     gender: { type: String, enum: ['boys', 'girls', 'co-ed', 'family'], required: true },
-    location: { type: String, required: true, trim: true },  // short area name
+    bhk: { type: String, default: '' },
+    location: { type: String, trim: true },  // short area name, generated from address
     address: { type: String, required: true, trim: true },  // full address
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
@@ -52,7 +53,7 @@ const listingSchema = new mongoose.Schema(
     image: { type: String, default: '' },
     description: { type: String, default: '' },
     rating: { type: Number, default: 0, min: 0, max: 5 },
-    isVerified: { type: Boolean, default: false },             // only true listings are shown
+    status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
     vacancyUpdatedAt: { type: Date, default: Date.now },             // used by weekly ping job
   },
   { timestamps: true }  // auto-adds createdAt, updatedAt

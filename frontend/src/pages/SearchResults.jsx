@@ -25,11 +25,14 @@ const TYPE_OPTS = [
   { value: 'flat', label: '🏠 Flat' },
 ]
 
-const GENDER_OPTS = [
+const GENDER_OPTS_HOSTEL = [
   { label: 'All', value: 'all' },
   { label: 'Boys', value: 'boys' },
   { label: 'Girls', value: 'girls' },
   { label: 'Co-Ed', value: 'co-ed' },
+]
+
+const GENDER_OPTS_FLAT = [
   { label: 'Family', value: 'family' },
 ]
 
@@ -48,6 +51,7 @@ export default function SearchResults({ user, savedIds, onToggleSave }) {
   const [typeFilter, setTypeFilter] = useState('all')
   const [genderFilter, setGenderFilter] = useState('all')
   const [maxRent, setMaxRent] = useState('')
+  const [maxRentInput, setMaxRentInput] = useState('') // local input value — only committed on blur/Enter
   const [sortBy, setSortBy] = useState('default')
   const [showFilters, setShowFilters] = useState(false)
   const [results, setResults] = useState([])
@@ -62,8 +66,35 @@ export default function SearchResults({ user, savedIds, onToggleSave }) {
       .finally(() => setLoading(false))
   }, [query, typeFilter, genderFilter, maxRent, sortBy])
 
+  // Reset gender when type changes to avoid invalid combinations
+  const handleTypeChange = (type) => {
+    setTypeFilter(type)
+    // flat always = family; hostel resets to all
+    if (type === 'flat') {
+      setGenderFilter('family')
+    } else {
+      setGenderFilter('all')
+    }
+  }
+
+  // Commit max rent only when user is done typing (blur or Enter)
+  const commitMaxRent = () => setMaxRent(maxRentInput)
+
   const hasActiveFilters = typeFilter !== 'all' || genderFilter !== 'all' || maxRent
-  const clearFilters = () => { setTypeFilter('all'); setGenderFilter('all'); setMaxRent('') }
+  const clearFilters = () => {
+    setTypeFilter('all')
+    setGenderFilter('all')
+    setMaxRent('')
+    setMaxRentInput('')
+  }
+
+  // Dynamic gender options based on selected type
+  const genderOpts = typeFilter === 'flat'
+    ? GENDER_OPTS_FLAT
+    : typeFilter === 'hostel'
+      ? GENDER_OPTS_HOSTEL
+      : [...GENDER_OPTS_HOSTEL] // 'all' type — show hostel genders + family option
+        .concat([{ label: 'Family', value: 'family' }])
 
   // Show empty state after loading if no results
   if (!loading && results.length === 0) {
@@ -147,7 +178,7 @@ export default function SearchResults({ user, savedIds, onToggleSave }) {
                 <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.72rem', fontWeight: 600, color: '#64748B', marginBottom: '0.35rem' }}>Type</p>
                 <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
                   {TYPE_OPTS.map((o) => (
-                    <button key={o.value} onClick={() => setTypeFilter(o.value)}
+                    <button key={o.value} onClick={() => handleTypeChange(o.value)}
                       style={{ padding: '0.25rem 0.75rem', borderRadius: '999px', border: `1.5px solid ${typeFilter === o.value ? '#F97316' : '#E2E8F0'}`, background: typeFilter === o.value ? '#FFF7ED' : 'white', color: typeFilter === o.value ? '#F97316' : '#64748B', fontFamily: 'DM Sans,sans-serif', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer' }}>
                       {o.label}
                     </button>
@@ -159,7 +190,7 @@ export default function SearchResults({ user, savedIds, onToggleSave }) {
               <div>
                 <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.72rem', fontWeight: 600, color: '#64748B', marginBottom: '0.35rem' }}>For</p>
                 <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
-                  {GENDER_OPTS.map((o) => (
+                  {genderOpts.map((o) => (
                     <button key={o.value} onClick={() => setGenderFilter(o.value)}
                       style={{ padding: '0.25rem 0.75rem', borderRadius: '999px', border: `1.5px solid ${genderFilter === o.value ? '#F97316' : '#E2E8F0'}`, background: genderFilter === o.value ? '#FFF7ED' : 'white', color: genderFilter === o.value ? '#F97316' : '#64748B', fontFamily: 'DM Sans,sans-serif', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer' }}>
                       {o.label}
@@ -175,7 +206,10 @@ export default function SearchResults({ user, savedIds, onToggleSave }) {
                   <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', fontFamily: 'DM Sans', fontSize: '0.8rem', color: '#94A3B8' }}>₹</span>
                   <input
                     type="number" min="0" placeholder="e.g. 4000"
-                    value={maxRent} onChange={(e) => setMaxRent(e.target.value)}
+                    value={maxRentInput}
+                    onChange={(e) => setMaxRentInput(e.target.value)}
+                    onBlur={commitMaxRent}
+                    onKeyDown={(e) => e.key === 'Enter' && commitMaxRent()}
                     style={{ paddingLeft: '1.5rem', width: 110, padding: '0.3rem 0.6rem 0.3rem 1.5rem', border: '1.5px solid #E2E8F0', borderRadius: '8px', fontFamily: 'DM Sans,sans-serif', fontSize: '0.8rem', color: '#0F172A', outline: 'none' }}
                   />
                 </div>

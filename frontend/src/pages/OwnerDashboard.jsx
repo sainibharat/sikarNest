@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import ListPropertyModal from '../components/ListPropertyModal'
+import EditListingModal from '../components/EditListingModal'
 
 const STATUS_CONFIG = {
   pending:  { color: '#F59E0B', bg: '#FFFBEB', label: '⏳ Under Review', desc: 'Being reviewed by SikarNest team' },
@@ -21,6 +22,7 @@ export default function OwnerDashboard({ user, onLogin }) {
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading]         = useState(true)
   const [showModal, setShowModal]     = useState(false)
+  const [editingListing, setEditingListing] = useState(null)
   const [toast, setToast]             = useState('')
 
   // Auto-open modal if directed from Homepage CTA
@@ -38,7 +40,7 @@ export default function OwnerDashboard({ user, onLogin }) {
     if (!user?.email) return
     setLoading(true)
     try {
-      const res = await fetch(`/api/submissions/mine?email=${encodeURIComponent(user.email)}`)
+      const res = await fetch(`/api/listings/mine?email=${encodeURIComponent(user.email)}`)
       const data = await res.json()
       setSubmissions(data.data || [])
     } catch {
@@ -188,9 +190,19 @@ export default function OwnerDashboard({ user, onLogin }) {
                             📍 {sub.address}
                           </p>
                         </div>
-                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <p style={{ fontFamily: 'Sora,sans-serif', fontWeight: 800, fontSize: '1rem', color: '#0F172A' }}>₹{sub.rent.toLocaleString()}</p>
-                          <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.68rem', color: '#94A3B8' }}>/month</p>
+                        <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
+                          <div style={{ textAlign: 'right' }}>
+                            <p style={{ fontFamily: 'Sora,sans-serif', fontWeight: 800, fontSize: '1rem', color: '#0F172A', margin: 0 }}>₹{sub.rent.toLocaleString()}</p>
+                            <p style={{ fontFamily: 'DM Sans,sans-serif', fontSize: '0.68rem', color: '#94A3B8', margin: 0 }}>/month</p>
+                          </div>
+                          <button 
+                            onClick={() => setEditingListing(sub)}
+                            style={{ background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '6px', fontFamily: 'DM Sans,sans-serif', fontSize: '0.72rem', fontWeight: 600, color: '#475569', cursor: 'pointer', padding: '4px 10px', transition: 'all 0.15s' }}
+                            onMouseOver={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.background = '#E2E8F0' }}
+                            onMouseOut={(e) => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#F1F5F9' }}
+                          >
+                            ✏️ Edit
+                          </button>
                         </div>
                       </div>
 
@@ -284,6 +296,19 @@ export default function OwnerDashboard({ user, onLogin }) {
         <ListPropertyModal
           user={user}
           onClose={() => { setShowModal(false); loadSubmissions() }}
+        />
+      )}
+
+      {/* Edit property modal */}
+      {editingListing && (
+        <EditListingModal
+          listing={editingListing}
+          onClose={() => setEditingListing(null)}
+          onSuccess={() => {
+            setEditingListing(null)
+            showToastMsg('Listing updated successfully!')
+            loadSubmissions()
+          }}
         />
       )}
 

@@ -34,7 +34,7 @@ const SEED_DATA = [
     rating: 4.3,
     image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=600&q=80',
     description: 'Well-maintained boys hostel near Allen Institute with all basic facilities.',
-    isVerified: true,
+    status: 'approved',
   },
   {
     name: 'Green View Flat',
@@ -49,7 +49,7 @@ const SEED_DATA = [
     rating: 4.1,
     image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80',
     description: '2BHK fully furnished flat, ideal for working professionals or groups.',
-    isVerified: true,
+    status: 'approved',
   },
   {
     name: 'Raj Boys Hostel',
@@ -64,7 +64,7 @@ const SEED_DATA = [
     rating: 3.9,
     image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80',
     description: 'Budget-friendly hostel for students with separate study room.',
-    isVerified: true,
+    status: 'approved',
   },
   {
     name: 'Fatehpur Hostel',
@@ -79,7 +79,7 @@ const SEED_DATA = [
     rating: 3.7,
     image: 'https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=600&q=80',
     description: 'Affordable hostel with mess facility near bus stand.',
-    isVerified: true,
+    status: 'approved',
   },
   {
     name: 'Devi Girls Hostel',
@@ -94,7 +94,7 @@ const SEED_DATA = [
     rating: 4.2,
     image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80',
     description: 'Safe and secure girls hostel with 24/7 CCTV.',
-    isVerified: true,
+    status: 'approved',
   },
   {
     name: 'Nehru Nagar Flat',
@@ -109,7 +109,7 @@ const SEED_DATA = [
     rating: 4.4,
     image: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&q=80',
     description: 'Modern 1BHK flat in prime Nehru Nagar location.',
-    isVerified: true,
+    status: 'approved',
   },
   {
     name: 'Bajaj Colony Hostel',
@@ -124,7 +124,7 @@ const SEED_DATA = [
     rating: 4.5,
     image: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?w=600&q=80',
     description: 'Premium co-ed hostel with gym and homemade food.',
-    isVerified: true,
+    status: 'approved',
   },
   {
     name: 'Sudama Boys Hostel',
@@ -139,7 +139,7 @@ const SEED_DATA = [
     rating: 3.8,
     image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=600&q=80',
     description: 'Budget hostel for students appearing for competitive exams.',
-    isVerified: true,
+    status: 'approved',
   },
 ]
 

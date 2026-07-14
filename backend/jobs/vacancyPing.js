@@ -28,7 +28,7 @@ function startVacancyPingJob() {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
       const staleListings = await Listing.find({
-        isVerified: true,
+        status: 'approved',
         vacancyUpdatedAt: { $lt: sevenDaysAgo },
       }).lean()
 
